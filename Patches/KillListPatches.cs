@@ -47,6 +47,7 @@ namespace DamageReport.Patches
 
     /// <summary>
     /// 每一行的文字后处理：加“已击杀 / 未击杀”标记和伤害数字。
+    /// 名字/等级不自己填，交给游戏原生逻辑（Savage 侧显示转写名，Usec/Bear 侧显示 ???）。
     /// </summary>
     public sealed class KillListVictimShowPatch : ModulePatch
     {
@@ -55,6 +56,25 @@ namespace DamageReport.Patches
             return typeof(KillListVictim).GetMethod(
                 "Show",
                 new[] { typeof(GClass2201), typeof(bool), typeof(int) });
+        }
+
+        [PatchPrefix]
+        private static void Prefix(GClass2201 victim, ref bool knownName)
+        {
+            try
+            {
+                // 未击杀的目标自然没有狗牌：把 knownName 置 false，
+                // 让原生 Show 按 “Savage 显示名字 / 其他显示 ???” 处理，
+                // 与“击杀但没捡狗牌”的行完全一致。
+                if (victim != null && !KillListPage.IsKilled(victim.ProfileId))
+                {
+                    knownName = false;
+                }
+            }
+            catch
+            {
+                // 前缀失败不影响原生渲染。
+            }
         }
 
         [PatchPostfix]
@@ -126,6 +146,11 @@ namespace DamageReport.Patches
             }
         }
 
+        public static bool IsKilled(string profileId)
+        {
+            return !string.IsNullOrEmpty(profileId) && KilledProfileIds.Contains(profileId);
+        }
+
         public static void Decorate(KillListVictim view, GClass2201 victim)
         {
             if (view == null || victim == null)
@@ -171,10 +196,8 @@ namespace DamageReport.Patches
                 return;
             }
 
-            // 未击杀：原生只会显示 ???，这里用记录补上名字、等级、部位、伤害、武器、距离。
-            SetText(view, "_name", record.Name);
-            SetText(view, "_level", record.Level > 0 ? record.Level.ToString() : "--");
-
+            // 未击杀：名字/等级交给原生（未击杀 = 没有狗牌，Savage 显示名字，Usec/Bear 显示 ???），
+            // 这里只补状态列：部位、伤害、武器、距离。
             var statusText = marker + " " + BodyPartText(record.LastPart) + " · " + damageText;
 
             if (!string.IsNullOrEmpty(record.WeaponName))
