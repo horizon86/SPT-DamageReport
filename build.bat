@@ -1,0 +1,1 @@
+dotnet build .\DamageReport.csproj -c Release -p:GameRoot="C:\Game\EscapeFromTarkov\Client.0.16.9.0.40087"
