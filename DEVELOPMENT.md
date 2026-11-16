@@ -106,15 +106,23 @@ The build needs the .NET Framework 4.7.2 targeting pack (installed with Visual S
 
 ## Packaging a release
 
-Build first (see above), then zip the plugin using the game-root layout so players can extract it directly into their SPT folder:
+Run:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\package.ps1 -Version 1.0.0
+```
+
+It builds the plugin (unless `-SkipBuild` is passed), stages the DLL, and writes `dist/DamageReport-v1.0.0.zip` with the game-root layout:
 
 ```
-DamageReport.zip
+DamageReport-v1.0.0.zip
   BepInEx/
     plugins/
       DamageReport/
         DamageReport.dll
 ```
+
+Players extract the zip into the SPT game root. `package.cmd` is a double-click wrapper.
 
 The README expects the screenshot at `docs/screenshot.png`.
 
