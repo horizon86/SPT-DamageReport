@@ -1,6 +1,6 @@
 # SPT Damage Report
 
-![Damage Report screenshot](docs/screenshot.png)
+![Damage Report screenshot](docs/屏幕截图%202026-11-19%20005300.png)
 
 **English** | [中文](#中文)
 
